@@ -9,12 +9,13 @@ class AppCard extends StatelessWidget {
     required this.child,
     this.onTap,
     this.padding = const EdgeInsets.all(20),
+    this.selected = false,
   });
 
   final Widget child;
   final VoidCallback? onTap;
   final EdgeInsetsGeometry padding;
-
+  final bool selected;
   @override
   Widget build(BuildContext context) {
     final content = Padding(padding: padding, child: child);
@@ -23,7 +24,7 @@ class AppCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide(color: selected ? AppColors.ink : AppColors.border),
       ),
       child: onTap == null
           ? content

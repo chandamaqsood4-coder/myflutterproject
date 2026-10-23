@@ -90,4 +90,36 @@ void main() {
       throwsFormatException,
     );
   });
+
+  test('only sends opening stock when creating', () {
+    const draft = ProductDraft(
+      name: 'Cable',
+      sku: 'CBL-1',
+      sellingPriceMinor: 1000,
+      stockQty: 5,
+    );
+
+    final create = productDraftToJson(draft, includeOpeningQuantity: true);
+    final update = productDraftToJson(draft);
+
+    expect(create['opening_quantity'], 5);
+    expect(update.containsKey('opening_quantity'), isFalse);
+  });
+
+  test('reads the uploaded image url from common response shapes', () {
+    expect(
+      imageUrlFromJson({
+        'data': {'url': 'a.png'},
+      }),
+      'a.png',
+    );
+    expect(
+      imageUrlFromJson({
+        'data': {'path': 'b.png'},
+      }),
+      'b.png',
+    );
+    expect(imageUrlFromJson({'url': 'c.png'}), 'c.png');
+    expect(imageUrlFromJson({'data': {}}), isNull);
+  });
 }

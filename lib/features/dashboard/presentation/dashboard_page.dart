@@ -11,13 +11,22 @@ import 'widgets/quick_action_card.dart';
 import 'widgets/recent_invoices_section.dart';
 
 class DashboardPage extends ConsumerWidget {
-  const DashboardPage({super.key, required this.onNavigate});
+  const DashboardPage({
+    super.key,
+    required this.onNavigate,
+    required this.permissions,
+  });
 
   final ValueChanged<NavDestination> onNavigate;
+  final Set<String> permissions;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(dashboardSummaryProvider);
+    final canCreateInvoice = permissions.contains('invoices.create');
+    final canCreateProduct = permissions.contains('products.create');
+    final canManageCustomers = permissions.contains('customers.manage');
+    final canManageExpenses = permissions.contains('expenses.manage');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(28, 24, 28, 32),
@@ -28,15 +37,43 @@ class DashboardPage extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Owner Dashboard',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.ink,
-                  letterSpacing: -0.5,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Owner Dashboard',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.ink,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  if (canCreateInvoice)
+                    ElevatedButton.icon(
+                      onPressed: () => onNavigate(NavDestination.pos),
+                      icon: const Icon(Icons.shopping_cart_outlined, size: 20),
+                      label: const Text('Launch POS'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 18,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 2,
+                      ),
+                    ),
+                ],
               ),
+
               const SizedBox(height: 4),
               Text(
                 "Today's snapshot for ${summary.storeName}",
@@ -83,30 +120,34 @@ class DashboardPage extends ConsumerWidget {
               const SizedBox(height: 16),
               AdaptiveGrid(
                 children: [
-                  QuickActionCard(
-                    icon: Icons.shopping_cart_outlined,
-                    title: 'New POS Invoice',
-                    subtitle: 'High speed counter sales',
-                    onTap: () => onNavigate(NavDestination.pos),
-                  ),
-                  QuickActionCard(
-                    icon: Icons.add,
-                    title: 'Add Catalog Product',
-                    subtitle: 'Item & electrical specs',
-                    onTap: () => onNavigate(NavDestination.products),
-                  ),
-                  QuickActionCard(
-                    icon: Icons.person_add_alt_outlined,
-                    title: 'Customer Account',
-                    subtitle: 'Ledgers & credit terms',
-                    onTap: () => onNavigate(NavDestination.customers),
-                  ),
-                  QuickActionCard(
-                    icon: Icons.credit_card_outlined,
-                    title: 'Daily Cashflow',
-                    subtitle: 'Operational income/expense',
-                    onTap: () => onNavigate(NavDestination.cashflow),
-                  ),
+                  if (canCreateInvoice)
+                    QuickActionCard(
+                      icon: Icons.shopping_cart_outlined,
+                      title: 'New POS Invoice',
+                      subtitle: 'High speed counter sales',
+                      onTap: () => onNavigate(NavDestination.pos),
+                    ),
+                  if (canCreateProduct)
+                    QuickActionCard(
+                      icon: Icons.add,
+                      title: 'Add Catalog Product',
+                      subtitle: 'Item & electrical specs',
+                      onTap: () => onNavigate(NavDestination.products),
+                    ),
+                  if (canManageCustomers)
+                    QuickActionCard(
+                      icon: Icons.person_add_alt_outlined,
+                      title: 'Customer Account',
+                      subtitle: 'Ledgers & credit terms',
+                      onTap: () => onNavigate(NavDestination.customers),
+                    ),
+                  if (canManageExpenses)
+                    QuickActionCard(
+                      icon: Icons.credit_card_outlined,
+                      title: 'Daily Cashflow',
+                      subtitle: 'Operational income/expense',
+                      onTap: () => onNavigate(NavDestination.cashflow),
+                    ),
                 ],
               ),
               const SizedBox(height: 32),

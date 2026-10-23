@@ -217,7 +217,10 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
     final items = <DropdownMenuItem<int?>>[
       const DropdownMenuItem<int?>(value: null, child: Text('—')),
       ...entries.map(
-        (e) => DropdownMenuItem<int?>(value: e.id, child: Text(e.name)),
+        (e) => DropdownMenuItem<int?>(
+          value: e.id,
+          child: Text(e.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
       ),
     ];
     // Keep the current selection visible while the list loads, or when the
@@ -226,7 +229,11 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
       items.add(
         DropdownMenuItem<int?>(
           value: selectedId,
-          child: Text(selectedName ?? '#$selectedId'),
+          child: Text(
+            selectedName ?? '#$selectedId',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       );
     }
@@ -301,6 +308,7 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
                     Expanded(
                       child: DropdownButtonFormField<int?>(
                         initialValue: _categoryId,
+                        isExpanded: true,
                         decoration: _dec('Category'),
                         items: _catalogItems(
                           catList,
@@ -314,6 +322,7 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
                     Expanded(
                       child: DropdownButtonFormField<int?>(
                         initialValue: _brandId,
+                        isExpanded: true,
                         decoration: _dec('Brand'),
                         items: _catalogItems(
                           brandList,
@@ -382,30 +391,29 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: DropdownButtonFormField<ProductStatus>(
-                        initialValue: _status,
-                        decoration: _dec('Status'),
-                        items: const [
-                          DropdownMenuItem(
-                            value: ProductStatus.active,
-                            child: Text('active'),
-                          ),
-                          DropdownMenuItem(
-                            value: ProductStatus.paused,
-                            child: Text('inactive/paused'),
-                          ),
-                          DropdownMenuItem(
-                            value: ProductStatus.deleted,
-                            child: Text('deleted'),
-                          ),
-                        ],
-                        onChanged: (v) =>
-                            setState(() => _status = v ?? ProductStatus.active),
-                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<ProductStatus>(
+                  initialValue: _status,
+                  isExpanded: true,
+                  decoration: _dec('Status'),
+                  items: const [
+                    DropdownMenuItem(
+                      value: ProductStatus.active,
+                      child: Text('active'),
+                    ),
+                    DropdownMenuItem(
+                      value: ProductStatus.paused,
+                      child: Text('inactive/paused'),
+                    ),
+                    DropdownMenuItem(
+                      value: ProductStatus.deleted,
+                      child: Text('deleted'),
                     ),
                   ],
+                  onChanged: (v) =>
+                      setState(() => _status = v ?? ProductStatus.active),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(

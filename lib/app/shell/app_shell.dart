@@ -6,6 +6,7 @@ import '../../features/auth/domain/auth_session.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/catalog/presentation/catalog_page.dart';
 import '../../features/dashboard/presentation/dashboard_page.dart';
+import '../../features/dashboard/presentation/providers/dashboard_providers.dart';
 import '../../features/products/presentation/products_page.dart';
 import '../../shared/design_system/app_colors.dart';
 import 'coming_soon_page.dart';

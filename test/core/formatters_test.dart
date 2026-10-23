@@ -29,4 +29,22 @@ void main() {
     expect(formatQuantity(2.5), '2.5');
     expect(formatQuantity(0.125), '0.125');
   });
+
+  group('parseMinorUnits', () {
+    test('parses valid money strings', () {
+      expect(parseMinorUnits('0'), 0);
+      expect(parseMinorUnits('0.00'), 0);
+      expect(parseMinorUnits('54,300'), 5430000);
+      expect(parseMinorUnits('19.99'), 1999);
+      expect(parseMinorUnits('0.5'), 50);
+    });
+
+    test('rejects invalid money strings', () {
+      expect(parseMinorUnits(''), isNull);
+      expect(parseMinorUnits('abc'), isNull);
+      expect(parseMinorUnits('-5'), isNull);
+      expect(parseMinorUnits('5.123'), isNull);
+      expect(parseMinorUnits('5,300.00.00'), isNull);
+    });
+  });
 }

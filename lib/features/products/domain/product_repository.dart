@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'product.dart';
 
 abstract interface class ProductRepository {
@@ -15,6 +17,12 @@ abstract interface class ProductRepository {
 
   /// Adjusts stock by [delta] (positive adds stock). Throws `ApiException`.
   Future<void> adjustStock(int id, int delta, {String? note});
+
+  /// Uploads an image and returns the public URL. Throws `ApiException`.
+  Future<String> uploadImage({
+    required Uint8List bytes,
+    required String filename,
+  });
 
   Future<void> deleteProduct(int id);
 }

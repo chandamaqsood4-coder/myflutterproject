@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dukan_os/features/auth/presentation/providers/auth_providers.dart';
 import 'package:dukan_os/features/products/domain/product.dart';
 import 'package:dukan_os/features/products/domain/product_repository.dart';
@@ -30,6 +32,12 @@ class _FakeProductRepository implements ProductRepository {
 
   @override
   Future<void> adjustStock(int id, int delta, {String? note}) async {}
+
+  @override
+  Future<String> uploadImage({
+    required Uint8List bytes,
+    required String filename,
+  }) async => 'https://example.com/image.png';
 
   @override
   Future<void> deleteProduct(int id) async {}

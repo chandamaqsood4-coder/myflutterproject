@@ -1,12 +1,11 @@
-import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_exception.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../shared/design_system/app_colors.dart';
-import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../catalog/domain/catalog_entry.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../domain/product.dart';
@@ -86,24 +85,26 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
     super.dispose();
   }
 
-  int _parseMinor(String text) {
-    final t = text.trim().replaceAll(',', '');
-    if (t.isEmpty) return 0;
-    // allow decimals
-    final parts = t.split('.');
-    final whole = parts[0].isEmpty ? '0' : parts[0];
-    final frac = parts.length > 1
-        ? parts[1].padRight(2, '0').substring(0, 2)
-        : '00';
-    final sign = whole.startsWith('-') ? -1 : 1;
-    final w = whole.replaceAll('-', '');
-    return sign * (int.parse(w.isEmpty ? '0' : w) * 100 + int.parse(frac));
-  }
+  int _parseMinor(String text) => parseMinorUnits(text) ?? 0;
 
   int? _parseInt(String text) {
     final t = text.trim();
     if (t.isEmpty) return null;
     return int.tryParse(t);
+  }
+
+  String? _validatePrice(String? value, {bool required = true}) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return required ? 'Enter a price' : null;
+    if (parseMinorUnits(text) == null) return 'Enter a valid amount';
+    return null;
+  }
+
+  String? _validateStock(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return 'Enter a quantity';
+    if (int.tryParse(text) == null) return 'Enter a whole number';
+    return null;
   }
 
   Future<void> _pickAndUpload() async {
@@ -120,37 +121,16 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
     });
 
     try {
-      final dio = ref.read(dioProvider);
-      final formData = FormData.fromMap({
-        'image': MultipartFile.fromBytes(bytes, filename: file.name),
-      });
-      final response = await dio.post<Map<String, dynamic>>(
-        '/products/upload-image',
-        data: formData,
-        options: Options(contentType: 'multipart/form-data'),
-      );
-      final body = response.data;
-      final data = body?['data'];
-      String? url;
-      if (data is Map<String, dynamic>) {
-        url =
-            data['url'] as String? ??
-            data['path'] as String? ??
-            data['image'] as String?;
-      }
-      url ??= body?['url'] as String?;
-      if (url != null && url.trim().isNotEmpty && mounted) {
-        setState(() {
-          _imageUrl.text = url!.trim();
-        });
-      } else if (mounted) {
-        setState(() => _error = 'Image uploaded but no URL was returned.');
-      }
-    } on DioException catch (e) {
+      final url = await ref
+          .read(productRepositoryProvider)
+          .uploadImage(bytes: bytes, filename: file.name);
       if (mounted) {
-        final ex = apiExceptionFromDio(e);
-        setState(() => _error = ex.message);
+        setState(() {
+          _imageUrl.text = url;
+        });
       }
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _error = e.message);
     } catch (_) {
       if (mounted) setState(() => _error = 'Could not upload image.');
     } finally {
@@ -168,8 +148,8 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
     });
 
     final draft = ProductDraft(
-      name: _name.text,
-      sku: _sku.text,
+      name: _name.text.trim(),
+      sku: _sku.text.trim(),
       sellingPriceMinor: _parseMinor(_sellingPrice.text),
       purchasePriceMinor: _parseMinor(_purchaseCost.text),
       barcode: _barcode.text.trim().isEmpty ? null : _barcode.text.trim(),
@@ -179,7 +159,9 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
       status: _status,
       stockQty: _parseInt(_stock.text) ?? 0,
       minQuantityThreshold: _parseInt(_minThreshold.text),
-      description: _description.text.trim().isEmpty ? null : _description.text,
+      description: _description.text.trim().isEmpty
+          ? null
+          : _description.text.trim(),
       imageUrl: _imageUrl.text.trim().isEmpty ? null : _imageUrl.text.trim(),
     );
 
@@ -227,12 +209,37 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
     );
   }
 
+  List<DropdownMenuItem<int?>> _catalogItems(
+    List<CatalogEntry> entries,
+    int? selectedId,
+    String? selectedName,
+  ) {
+    final items = <DropdownMenuItem<int?>>[
+      const DropdownMenuItem<int?>(value: null, child: Text('—')),
+      ...entries.map(
+        (e) => DropdownMenuItem<int?>(value: e.id, child: Text(e.name)),
+      ),
+    ];
+    // Keep the current selection visible while the list loads, or when the
+    // linked entry is no longer returned by the API.
+    if (selectedId != null && !entries.any((e) => e.id == selectedId)) {
+      items.add(
+        DropdownMenuItem<int?>(
+          value: selectedId,
+          child: Text(selectedName ?? '#$selectedId'),
+        ),
+      );
+    }
+    return items;
+  }
+
   @override
   Widget build(BuildContext context) {
     final categories = ref.watch(catalogEntriesProvider(CatalogKind.category));
     final brands = ref.watch(catalogEntriesProvider(CatalogKind.brand));
     final catList = categories.value ?? const <CatalogEntry>[];
     final brandList = brands.value ?? const <CatalogEntry>[];
+    final product = widget.product;
 
     return AlertDialog(
       backgroundColor: AppColors.surface,
@@ -295,18 +302,11 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
                       child: DropdownButtonFormField<int?>(
                         initialValue: _categoryId,
                         decoration: _dec('Category'),
-                        items: [
-                          const DropdownMenuItem<int?>(
-                            value: null,
-                            child: Text('—'),
-                          ),
-                          ...catList.map(
-                            (c) => DropdownMenuItem<int?>(
-                              value: c.id,
-                              child: Text(c.name),
-                            ),
-                          ),
-                        ],
+                        items: _catalogItems(
+                          catList,
+                          _categoryId,
+                          product?.categoryName,
+                        ),
                         onChanged: (v) => setState(() => _categoryId = v),
                       ),
                     ),
@@ -315,18 +315,11 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
                       child: DropdownButtonFormField<int?>(
                         initialValue: _brandId,
                         decoration: _dec('Brand'),
-                        items: [
-                          const DropdownMenuItem<int?>(
-                            value: null,
-                            child: Text('—'),
-                          ),
-                          ...brandList.map(
-                            (b) => DropdownMenuItem<int?>(
-                              value: b.id,
-                              child: Text(b.name),
-                            ),
-                          ),
-                        ],
+                        items: _catalogItems(
+                          brandList,
+                          _brandId,
+                          product?.brandName,
+                        ),
                         onChanged: (v) => setState(() => _brandId = v),
                       ),
                     ),
@@ -343,13 +336,9 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
                           decimal: true,
                         ),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'[0-9.,-]'),
-                          ),
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                         ],
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Enter a price'
-                            : null,
+                        validator: _validatePrice,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -361,10 +350,9 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
                           decimal: true,
                         ),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'[0-9.,-]'),
-                          ),
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                         ],
+                        validator: (v) => _validatePrice(v, required: false),
                       ),
                     ),
                   ],
@@ -380,6 +368,7 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(RegExp(r'-?[0-9]')),
                         ],
+                        validator: _validateStock,
                       ),
                     ),
                     const SizedBox(width: 12),

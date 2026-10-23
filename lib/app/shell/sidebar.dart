@@ -44,7 +44,7 @@ class Sidebar extends StatelessWidget {
               height: 72,
               child: Center(
                 child: DukanOsLogo(
-                  height: collapsed ? 32 : 36,
+                  height: collapsed ? 65 : 76,
                   iconOnly: collapsed,
                 ),
               ),

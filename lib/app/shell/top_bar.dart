@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../shared/design_system/app_colors.dart';
 import 'user_menu.dart';
 
-class TopBar extends StatelessWidget {
+class TopBar extends StatefulWidget {
   const TopBar({
     super.key,
     required this.title,
@@ -26,6 +26,11 @@ class TopBar extends StatelessWidget {
   final bool showUserDetails;
 
   @override
+  State<TopBar> createState() => _TopBarState();
+}
+
+class _TopBarState extends State<TopBar> {
+  @override
   Widget build(BuildContext context) {
     return Container(
       height: 72,
@@ -34,45 +39,64 @@ class TopBar extends StatelessWidget {
         color: AppColors.surface,
         border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.home_outlined,
-            size: 18,
-            color: AppColors.textSecondary,
-          ),
-          const SizedBox(width: 6),
-          const Icon(
-            Icons.chevron_right,
-            size: 18,
-            color: AppColors.textSecondary,
-          ),
-          const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.ink,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final bool isSmallScreen = constraints.maxWidth < 900;
+
+          return Row(
+            children: [
+              const Icon(
+                Icons.home_outlined,
+                size: 18,
+                color: AppColors.textSecondary,
               ),
-            ),
-          ),
-          const Spacer(),
-          if (showStore) ...[
-            _StorePill(name: storeName),
-            const SizedBox(width: 20),
-          ],
-          UserMenu(
-            name: userName,
-            email: userEmail,
-            roleName: roleName,
-            onSignOut: onSignOut,
-            showDetails: showUserDetails,
-          ),
-        ],
+
+              const SizedBox(width: 6),
+
+              const Icon(
+                Icons.chevron_right,
+                size: 18,
+                color: AppColors.textSecondary,
+              ),
+
+              const SizedBox(width: 4),
+
+              Expanded(
+                child: Text(
+                  widget.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.ink,
+                  ),
+                ),
+              ),
+
+              Transform.translate(
+                offset: Offset(isSmallScreen ? 0 : -80, 0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.showStore) ...[
+                      _StorePill(name: widget.storeName),
+                      const SizedBox(width: 8),
+                    ],
+
+                    UserMenu(
+                      name: widget.userName,
+                      email: widget.userEmail,
+                      roleName: widget.roleName,
+                      onSignOut: widget.onSignOut,
+                      showDetails: widget.showUserDetails,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

@@ -44,6 +44,32 @@ void main() {
     expect(p.barcode, isNull);
   });
 
+  test('maps category/brand ids from objects and plain values', () {
+    final p = productFromJson({
+      'id': 4,
+      'name': 'Bulb',
+      'sku': 'BLB-1',
+      'category': {'id': 7, 'name': 'Lights'},
+      'brand_id': 3,
+      'selling_price': 50,
+    });
+
+    expect(p.categoryId, 7);
+    expect(p.brandId, 3);
+  });
+
+  test('handles stock as a plain number', () {
+    final p = productFromJson({
+      'id': 5,
+      'name': 'Wire',
+      'sku': 'WR-1',
+      'selling_price': 10,
+      'stock': 25,
+    });
+
+    expect(p.stockQty, 25);
+  });
+
   test('missing stock stays null and missing names show a dash', () {
     final p = productFromJson({
       'id': 3,

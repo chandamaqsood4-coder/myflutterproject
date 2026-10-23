@@ -20,4 +20,13 @@ void main() {
     expect(formatShortDate(DateTime(2026, 8, 28)), '28 Aug 2026');
     expect(formatShortDate(DateTime(2026, 1, 5)), '5 Jan 2026');
   });
+
+  test('formatQuantity trims trailing zeros', () {
+    expect(formatQuantity(19), '19');
+    expect(formatQuantity(-1), '-1');
+    expect(formatQuantity(0), '0');
+    expect(formatQuantity(100), '100');
+    expect(formatQuantity(2.5), '2.5');
+    expect(formatQuantity(0.125), '0.125');
+  });
 }

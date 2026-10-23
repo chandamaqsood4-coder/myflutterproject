@@ -208,12 +208,12 @@ class _CollapseTile extends StatelessWidget {
                   children: [
                     icon,
                     const SizedBox(width: 12),
-                    Flexible(
+                    const Expanded(
                       child: Text(
                         'Collapse',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
                         ),

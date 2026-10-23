@@ -28,3 +28,7 @@ const List<String> _months = [
 /// Formats a date as `28 Aug 2026`.
 String formatShortDate(DateTime date) =>
     '${date.day} ${_months[date.month - 1]} ${date.year}';
+
+/// Formats a quantity without trailing zeros: 19 -> `19`, 2.5 -> `2.5`.
+String formatQuantity(double quantity) =>
+    quantity.toStringAsFixed(3).replaceFirst(RegExp(r'\.?0+$'), '');

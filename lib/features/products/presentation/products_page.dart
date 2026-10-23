@@ -1,0 +1,348 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/network/api_exception.dart';
+import '../../../shared/design_system/app_colors.dart';
+import '../../../shared/widgets/confirm_dialog.dart';
+import '../../../shared/widgets/page_header.dart';
+import '../../../shared/widgets/pill_buttons.dart';
+import '../../../shared/widgets/preview_notice.dart';
+import '../../../shared/widgets/search_field.dart';
+import '../../auth/presentation/providers/auth_providers.dart';
+import '../domain/product.dart';
+import 'providers/product_providers.dart';
+import 'widgets/product_detail_dialog.dart';
+import 'widgets/product_form_dialog.dart';
+import 'widgets/products_table.dart';
+
+class ProductsPage extends ConsumerStatefulWidget {
+  const ProductsPage({super.key});
+
+  @override
+  ConsumerState<ProductsPage> createState() => _ProductsPageState();
+}
+
+class _ProductsPageState extends ConsumerState<ProductsPage> {
+  static const Duration _searchDelay = Duration(milliseconds: 300);
+
+  String _query = '';
+  Timer? _debounce;
+  ProductPage? _lastPage;
+  final Set<int> _selected = <int>{};
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(_searchDelay, () {
+      if (mounted) setState(() => _query = value.trim());
+    });
+  }
+
+  void _toggleRow(int id) => setState(() {
+    if (!_selected.remove(id)) _selected.add(id);
+  });
+
+  void _toggleAll(List<Product> visible) => setState(() {
+    final ids = visible.map((p) => p.id).toList();
+    final allSelected = ids.isNotEmpty && ids.every(_selected.contains);
+    if (allSelected) {
+      _selected.removeAll(ids);
+    } else {
+      _selected.addAll(ids);
+    }
+  });
+
+  Future<void> _openForm([Product? product]) async {
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (context) => ProductFormDialog(product: product),
+    );
+    if (saved == true && mounted) {
+      ref.invalidate(productsProvider);
+      ref.invalidate(productDetailProvider);
+      showMessage(
+        context,
+        product == null ? 'Product created.' : 'Product updated.',
+      );
+    }
+  }
+
+  Future<void> _openDetail(Product product) async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) => ProductDetailDialog(product: product),
+    );
+  }
+
+  Future<void> _delete(Product product) async {
+    final confirmed = await confirmDelete(
+      context,
+      title: 'Delete product?',
+      message: '"${product.name}" will be removed. This cannot be undone.',
+    );
+    if (!confirmed || !mounted) return;
+
+    try {
+      await ref.read(productRepositoryProvider).deleteProduct(product.id);
+      if (!mounted) return;
+      setState(() => _selected.remove(product.id));
+      ref.invalidate(productsProvider);
+      ref.invalidate(productDetailProvider);
+      showMessage(context, 'Deleted ${product.name}.');
+    } on ApiException catch (e) {
+      if (mounted) showMessage(context, e.message);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final permissions = ref.watch(currentPermissionsProvider);
+    final canCreate = permissions.contains('products.create');
+    final canEdit = permissions.contains('products.update');
+    final canDelete = permissions.contains('products.delete');
+
+    final result = ref.watch(productsProvider(_query));
+    if (result is AsyncData<ProductPage>) _lastPage = result.value;
+    final page = _lastPage;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1280),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              PageHeader(
+                title: 'Products & Stock',
+                subtitle: 'Manage appliance items, dynamic specifications, barcode identifiers, and stock levels.',
+                action: canCreate
+                    ? PrimaryPillButton(
+                        icon: Icons.add,
+                        label: 'Add Product',
+                        onPressed: () => _openForm(),
+                      )
+                    : null,
+              ),
+              const SizedBox(height: 24),
+              _Toolbar(
+                onSearch: _onSearchChanged,
+                onPrint: () => showPreviewNotice(context, 'Printing products'),
+                onFilters: () => showPreviewNotice(context, 'Filters'),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: page == null
+                    ? (result is AsyncError
+                          ? _LoadError(
+                              message: _messageOf(result.error),
+                              onRetry: () =>
+                                  ref.invalidate(productsProvider(_query)),
+                            )
+                          : const Center(child: CircularProgressIndicator()))
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _CountLine(
+                            shown: page.items.length,
+                            total: page.total,
+                            loading: result.isLoading,
+                          ),
+                          if (result is AsyncError) ...[
+                            const SizedBox(height: 8),
+                            _ErrorBanner(
+                              message: _messageOf(result.error),
+                              onRetry: () =>
+                                  ref.invalidate(productsProvider(_query)),
+                            ),
+                          ],
+                          const SizedBox(height: 12),
+                          Expanded(
+                            child: ProductsTable(
+                              products: page.items,
+                              selectedIds: _selected,
+                              canEdit: canEdit,
+                              canDelete: canDelete,
+                              onToggleRow: _toggleRow,
+                              onToggleAll: () => _toggleAll(page.items),
+                              onOpen: _openDetail,
+                              onEdit: canEdit ? _openForm : (_) {},
+                              onDelete: _delete,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  static String _messageOf(Object? error) =>
+      error is ApiException ? error.message : 'Could not load products.';
+}
+
+class _CountLine extends StatelessWidget {
+  const _CountLine({
+    required this.shown,
+    required this.total,
+    required this.loading,
+  });
+
+  final int shown;
+  final int total;
+  final bool loading;
+
+  @override
+  Widget build(BuildContext context) {
+    const bold = TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink);
+    return Row(
+      children: [
+        Text.rich(
+          TextSpan(
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+            children: [
+              const TextSpan(text: 'Showing '),
+              TextSpan(text: '$shown', style: bold),
+              const TextSpan(text: ' of '),
+              TextSpan(text: '$total', style: bold),
+              const TextSpan(text: ' products'),
+            ],
+          ),
+        ),
+        if (loading) ...[
+          const SizedBox(width: 12),
+          const SizedBox(
+            width: 14,
+            height: 14,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _Toolbar extends StatelessWidget {
+  const _Toolbar({
+    required this.onSearch,
+    required this.onPrint,
+    required this.onFilters,
+  });
+
+  final ValueChanged<String> onSearch;
+  final VoidCallback onPrint;
+  final VoidCallback onFilters;
+
+  @override
+  Widget build(BuildContext context) {
+    final search = SearchField(
+      hint: 'Search products by name, SKU, or barcode...',
+      onChanged: onSearch,
+    );
+    final buttons = Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        OutlinedPillButton(
+          icon: Icons.print_outlined,
+          label: 'Print All Products',
+          onPressed: onPrint,
+        ),
+        OutlinedPillButton(
+          icon: Icons.tune,
+          label: 'Filters',
+          onPressed: onFilters,
+        ),
+      ],
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 720) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [search, const SizedBox(height: 12), buttons],
+          );
+        }
+        return Row(
+          children: [
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 448),
+                  child: search,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            buttons,
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Icon(Icons.error_outline, size: 18, color: AppColors.error),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            message,
+            style: const TextStyle(fontSize: 13, color: AppColors.error),
+          ),
+        ),
+        TextButton(onPressed: onRetry, child: const Text('Retry')),
+      ],
+    );
+  }
+}
+
+class _LoadError extends StatelessWidget {
+  const _LoadError({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 8),
+          TextButton(onPressed: onRetry, child: const Text('Try again')),
+        ],
+      ),
+    );
+  }
+}

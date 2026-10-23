@@ -46,7 +46,7 @@ DioException _http(int status, Object? body) {
 }
 
 AuthRepositoryImpl _repo(_FakeRemote remote, _FakeStorage storage) =>
-    AuthRepositoryImpl(remote: remote, storage: storage);
+    AuthRepositoryImpl(remote, storage);
 
 void main() {
   late _FakeStorage storage;

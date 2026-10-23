@@ -13,6 +13,10 @@ abstract final class AppColors {
   static const Color surface = Color(0xFFFFFFFF);
   static const Color fieldFill = Color(0xFFF4F4F5);
   static const Color hoverFill = Color(0xFFF4F4F5);
+  static const Color pageBg = Color(0xFFFAFAF9);
+  static const Color selectedRow = Color(0xFFF6F8FA);
+  static const Color tileFill = Color(0xFFEEF1F6);
+  static const Color tileText = Color(0xFF94A3B8);
   static const Color border = Color(0xFFE5E7EB);
   static const Color chipNeutralBg = Color(0xFFF1F1F2);
   static const Color chipNeutralFg = Color(0xFF374151);

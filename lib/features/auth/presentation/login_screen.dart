@@ -129,12 +129,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      // Wrap instead of Row so the form never overflows on
-                      // narrow windows or with large text scales.
                       Wrap(
                         alignment: WrapAlignment.spaceBetween,
                         crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 12,
                         runSpacing: 4,
                         children: [
                           Row(

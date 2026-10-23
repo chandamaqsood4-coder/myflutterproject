@@ -9,10 +9,10 @@ import 'auth_remote_data_source.dart';
 import 'session_storage.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  AuthRepositoryImpl({required this.remote, required this.storage});
+  AuthRepositoryImpl(this._remote, this._storage);
 
-  final AuthRemoteDataSource remote;
-  final SessionStorage storage;
+  final AuthRemoteDataSource _remote;
+  final SessionStorage _storage;
 
   @override
   Future<AuthSession> signIn({
@@ -22,7 +22,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }) async {
     final Map<String, dynamic> data;
     try {
-      data = await remote.login(email: email, password: password);
+      data = await _remote.login(email: email, password: password);
     } on DioException catch (e) {
       throw _fromDio(e);
     } on FormatException {
@@ -54,7 +54,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<AuthSession?> restoreSession() async {
     try {
-      final data = await storage.read();
+      final data = await _storage.read();
       if (data == null) return null;
       final session = authSessionFromJson(data);
       return session.user.isActive ? session : null;
@@ -79,9 +79,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }) async {
     try {
       if (rememberMe) {
-        await storage.save(data);
+        await _storage.save(data);
       } else {
-        await storage.clear();
+        await _storage.clear();
       }
     } catch (e) {
       // Secure storage unavailable: the session still works until app exit.
@@ -91,7 +91,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   Future<void> _safeClear() async {
     try {
-      await storage.clear();
+      await _storage.clear();
     } catch (e) {
       debugPrint('Could not clear stored session: $e');
     }

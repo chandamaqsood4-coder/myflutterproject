@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 abstract final class AppTheme {
-  /// Bundle the Inter font in pubspec.yaml for pixel-accurate typography.
+  /// Bundle the Poppins font in pubspec.yaml for pixel-accurate typography.
   /// The app is offline-first, so never load fonts from the network.
-  static const String fontFamily = 'Inter';
+  static const String fontFamily = 'Poppins';
   static const List<String> fontFallback = ['Segoe UI', 'Roboto'];
 
   static ThemeData light() {

@@ -10,13 +10,15 @@ import '../../data/session_storage.dart';
 import '../../domain/auth_repository.dart';
 import '../../domain/auth_session.dart';
 
-/// Shared HTTP client. Move to core/ when a second feature needs it.
+/// Shared HTTP client. Move to core/ when more features depend on it.
+/// Adds the bearer token and signs the user out when the server rejects it.
 final dioProvider = Provider<Dio>((ref) {
   final dio = createApiClient(
     tokenReader: () {
       final session = ref.read(sessionProvider);
       return session is AsyncData<AuthSession?> ? session.value?.token : null;
     },
+    onUnauthorized: () => ref.read(sessionProvider.notifier).expire(),
   );
   ref.onDispose(dio.close);
   return dio;
@@ -24,8 +26,8 @@ final dioProvider = Provider<Dio>((ref) {
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl(
-    remote: AuthRemoteDataSource(ref.watch(dioProvider)),
-    storage: SessionStorage(),
+    AuthRemoteDataSource(ref.watch(dioProvider)),
+    SessionStorage(),
   );
 });
 
@@ -45,7 +47,22 @@ class SessionNotifier extends AsyncNotifier<AuthSession?> {
     await ref.read(authRepositoryProvider).signOut();
     state = const AsyncData(null);
   }
+
+  /// Called when the server rejects the token. No-op if already signed out.
+  Future<void> expire() async {
+    final current = state;
+    if (current is AsyncData<AuthSession?> && current.value == null) return;
+    await signOut();
+  }
 }
+
+/// Permissions of the signed-in user (empty when signed out).
+final currentPermissionsProvider = Provider<Set<String>>((ref) {
+  final session = ref.watch(sessionProvider);
+  return session is AsyncData<AuthSession?>
+      ? (session.value?.user.permissions ?? const <String>{})
+      : const <String>{};
+});
 
 /// Runs the sign-in action and exposes its loading and error state.
 final loginControllerProvider = AsyncNotifierProvider<LoginController, void>(

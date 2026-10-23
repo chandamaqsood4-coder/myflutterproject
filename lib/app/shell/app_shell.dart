@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/domain/auth_session.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
+import '../../features/catalog/presentation/catalog_page.dart';
 import '../../features/dashboard/presentation/dashboard_page.dart';
+import '../../features/products/presentation/products_page.dart';
+import '../../shared/design_system/app_colors.dart';
 import '../../features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'coming_soon_page.dart';
 import 'nav_destination.dart';
@@ -29,6 +32,13 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   void _select(NavDestination destination) =>
       setState(() => _selected = destination);
+
+  Widget _pageFor(NavDestination destination) => switch (destination) {
+    NavDestination.dashboard => DashboardPage(onNavigate: _select),
+    NavDestination.products => const ProductsPage(),
+    NavDestination.catalog => const CatalogPage(),
+    _ => ComingSoonPage(title: destination.label),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -83,9 +93,10 @@ class _AppShellState extends ConsumerState<AppShell> {
                           showUserDetails: contentWidth > 520,
                         ),
                         Expanded(
-                          child: _selected == NavDestination.dashboard
-                              ? DashboardPage(onNavigate: _select)
-                              : ComingSoonPage(title: _selected.label),
+                          child: ColoredBox(
+                            color: AppColors.pageBg,
+                            child: _pageFor(_selected),
+                          ),
                         ),
                       ],
                     ),

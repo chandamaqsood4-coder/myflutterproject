@@ -24,7 +24,10 @@ class AppCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: selected ? AppColors.ink : AppColors.border),
+        side: BorderSide(
+          color: selected ? AppColors.ink : AppColors.border,
+          width: selected ? 2 : 1,
+        ),
       ),
       child: onTap == null
           ? content

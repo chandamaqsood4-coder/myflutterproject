@@ -1,4 +1,3 @@
-import 'package:dukan_os/app/shell/nav_destination.dart';
 import 'package:dukan_os/features/dashboard/presentation/dashboard_page.dart';
 import 'package:dukan_os/shared/design_system/app_theme.dart';
 import 'package:flutter/material.dart';

@@ -49,5 +49,4 @@ class DukanOsApp extends StatelessWidget {
   }
 }
 
-
-// teaching them the github 
+// teaching them the github

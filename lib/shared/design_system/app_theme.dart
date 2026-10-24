@@ -19,12 +19,48 @@ abstract final class AppTheme {
           error: AppColors.error,
         );
 
+    final baseTextTheme = ThemeData.light().textTheme;
+    final poppinsTextTheme = baseTextTheme
+        .apply(fontFamily: fontFamily, fontFamilyFallback: fontFallback)
+        .copyWith(
+          headlineSmall: const TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: AppColors.ink,
+          ),
+          titleMedium: const TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppColors.ink,
+          ),
+          bodyLarge: const TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 14,
+            color: AppColors.ink,
+          ),
+          bodyMedium: const TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 12,
+            color: AppColors.ink,
+          ),
+          labelSmall: const TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: AppColors.ink,
+          ),
+        );
+
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.surface,
       fontFamily: fontFamily,
       fontFamilyFallback: fontFallback,
+      textTheme: poppinsTextTheme,
+      primaryTextTheme: poppinsTextTheme,
       checkboxTheme: CheckboxThemeData(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
         side: const BorderSide(color: AppColors.textSecondary, width: 1.5),

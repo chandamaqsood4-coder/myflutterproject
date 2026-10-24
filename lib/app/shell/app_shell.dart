@@ -8,6 +8,7 @@ import '../../features/catalog/presentation/catalog_page.dart';
 import '../../features/dashboard/presentation/dashboard_page.dart';
 import '../../features/dashboard/presentation/providers/dashboard_providers.dart';
 import '../../features/products/presentation/products_page.dart';
+import '../../features/products/presentation/providers/product_providers.dart';
 import '../../shared/design_system/app_colors.dart';
 import 'coming_soon_page.dart';
 import 'nav_destination.dart';
@@ -30,8 +31,11 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   void _toggleSidebar() => setState(() => _collapsed = !_collapsed);
 
-  void _select(NavDestination destination) =>
-      setState(() => _selected = destination);
+  void _select(NavDestination destination) {
+    ref.read(selectedProductDetailProvider.notifier).state = null;
+    ref.read(editingProductProvider.notifier).state = null;
+    setState(() => _selected = destination);
+  }
 
   Widget _pageFor(NavDestination destination) => switch (destination) {
     NavDestination.dashboard => DashboardPage(
@@ -48,6 +52,48 @@ class _AppShellState extends ConsumerState<AppShell> {
     final user = widget.session.user;
     final storeName = ref.watch(dashboardSummaryProvider).storeName;
     final roleName = user.role?.name ?? 'User';
+
+    final editingProduct = ref.watch(editingProductProvider);
+    final selectedProduct = ref.watch(selectedProductDetailProvider);
+
+    final List<BreadcrumbItem>? breadcrumbs = () {
+      if (_selected != NavDestination.products) return null;
+      if (editingProduct != null) {
+        return [
+          BreadcrumbItem(
+            label: 'Products',
+            onTap: () {
+              ref.read(editingProductProvider.notifier).clear();
+              ref.read(selectedProductDetailProvider.notifier).clear();
+            },
+          ),
+          if (editingProduct.id != 0)
+            BreadcrumbItem(
+              label: '${editingProduct.id}',
+              onTap: () {
+                ref.read(editingProductProvider.notifier).clear();
+                ref
+                    .read(selectedProductDetailProvider.notifier)
+                    .select(editingProduct);
+              },
+            ),
+          BreadcrumbItem(
+            label: editingProduct.id != 0 ? 'Edit' : 'Add Product',
+          ),
+        ];
+      }
+      if (selectedProduct != null) {
+        return [
+          BreadcrumbItem(
+            label: 'Products',
+            onTap: () =>
+                ref.read(selectedProductDetailProvider.notifier).clear(),
+          ),
+          BreadcrumbItem(label: '${selectedProduct.id}'),
+        ];
+      }
+      return null;
+    }();
 
     final items = NavDestination.values
         .where((d) => d.permission == null || user.hasPermission(d.permission!))
@@ -86,6 +132,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                       children: [
                         TopBar(
                           title: _selected.title,
+                          breadcrumbs: breadcrumbs,
                           storeName: storeName,
                           userName: user.name,
                           userEmail: user.email,

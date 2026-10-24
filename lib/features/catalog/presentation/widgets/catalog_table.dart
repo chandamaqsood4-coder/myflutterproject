@@ -10,6 +10,7 @@ import '../../domain/catalog_entry.dart';
 const double _actionsWidth = 240;
 const double _minTableWidth = 640;
 const double _rowHeight = 64;
+const double _headerHeight = 46;
 
 class CatalogTable extends StatelessWidget {
   const CatalogTable({
@@ -98,7 +99,7 @@ class _HeaderRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 56,
+      height: _headerHeight,
       child: Padding(
         padding: const EdgeInsets.only(left: 16),
         child: Row(
@@ -178,7 +179,7 @@ class _EntryRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: AppColors.ink,
                     ),
@@ -188,7 +189,7 @@ class _EntryRow extends StatelessWidget {
                     entry.slug,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.mono,
+                    style: AppTextStyles.mono.copyWith(fontSize: 12),
                   ),
                 ],
               ),
@@ -212,7 +213,7 @@ class _EntryRow extends StatelessWidget {
               child: Center(
                 child: StatusPill(
                   label: entry.isActive ? 'ACTIVE' : 'INACTIVE',
-                  tone: entry.isActive ? PillTone.success : PillTone.neutral,
+                  tone: entry.isActive ? PillTone.success : PillTone.danger,
                 ),
               ),
             ),

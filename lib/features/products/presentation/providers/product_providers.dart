@@ -19,3 +19,39 @@ final productsProvider = FutureProvider.family<ProductPage, String>(
 final productDetailProvider = FutureProvider.family<Product?, int>(
   (ref, id) => ref.watch(productRepositoryProvider).fetchProduct(id),
 );
+
+class SelectedProductNotifier extends Notifier<Product?> {
+  @override
+  Product? build() => null;
+
+  @override
+  set state(Product? value) => super.state = value;
+
+  void select(Product? product) => state = product;
+
+  void clear() => state = null;
+}
+
+/// Currently viewed product for the detail view page. When null, the products table is shown.
+final selectedProductDetailProvider =
+    NotifierProvider<SelectedProductNotifier, Product?>(
+      SelectedProductNotifier.new,
+    );
+
+class EditingProductNotifier extends Notifier<Product?> {
+  @override
+  Product? build() => null;
+
+  @override
+  set state(Product? value) => super.state = value;
+
+  void edit(Product? product) => state = product;
+
+  void clear() => state = null;
+}
+
+/// Currently edited product for the full-page edit view. When null, normal view is shown.
+final editingProductProvider =
+    NotifierProvider<EditingProductNotifier, Product?>(
+      EditingProductNotifier.new,
+    );

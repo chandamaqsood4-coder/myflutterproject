@@ -174,6 +174,7 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
       }
       if (mounted) {
         ref.invalidate(productsProvider);
+        ref.invalidate(productsProvider(''));
         Navigator.of(context).pop(true);
       }
     } on ApiException catch (e) {
@@ -401,15 +402,15 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
                   items: const [
                     DropdownMenuItem(
                       value: ProductStatus.active,
-                      child: Text('active'),
+                      child: Text('Active (Available for sale)'),
                     ),
                     DropdownMenuItem(
                       value: ProductStatus.paused,
-                      child: Text('inactive/paused'),
+                      child: Text('Inactive (Hidden from POS)'),
                     ),
                     DropdownMenuItem(
                       value: ProductStatus.deleted,
-                      child: Text('deleted'),
+                      child: Text('Archived'),
                     ),
                   ],
                   onChanged: (v) =>

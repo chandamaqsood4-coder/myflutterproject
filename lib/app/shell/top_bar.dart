@@ -3,6 +3,13 @@ import 'package:flutter/material.dart';
 import '../../shared/design_system/app_colors.dart';
 import 'user_menu.dart';
 
+class BreadcrumbItem {
+  const BreadcrumbItem({required this.label, this.onTap});
+
+  final String label;
+  final VoidCallback? onTap;
+}
+
 class TopBar extends StatefulWidget {
   const TopBar({
     super.key,
@@ -14,6 +21,7 @@ class TopBar extends StatefulWidget {
     required this.onSignOut,
     this.showStore = true,
     this.showUserDetails = true,
+    this.breadcrumbs,
   });
 
   final String title;
@@ -24,6 +32,7 @@ class TopBar extends StatefulWidget {
   final VoidCallback onSignOut;
   final bool showStore;
   final bool showUserDetails;
+  final List<BreadcrumbItem>? breadcrumbs;
 
   @override
   State<TopBar> createState() => _TopBarState();
@@ -33,11 +42,11 @@ class _TopBarState extends State<TopBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 72,
+      height: 68,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
+        border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -53,29 +62,80 @@ class _TopBarState extends State<TopBar> {
 
               const SizedBox(width: 6),
 
-              const Icon(
-                Icons.chevron_right,
-                size: 18,
-                color: AppColors.textSecondary,
-              ),
-
-              const SizedBox(width: 4),
-
-              Expanded(
-                child: Text(
-                  widget.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.ink,
+              if (widget.breadcrumbs != null && widget.breadcrumbs!.isNotEmpty)
+                Expanded(
+                  child: Row(
+                    children: [
+                      for (int i = 0; i < widget.breadcrumbs!.length; i++) ...[
+                        const Icon(
+                          Icons.chevron_right,
+                          size: 18,
+                          color: AppColors.textSecondary,
+                        ),
+                        const SizedBox(width: 6),
+                        if (i == widget.breadcrumbs!.length - 1)
+                          Flexible(
+                            child: Text(
+                              widget.breadcrumbs![i].label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.ink,
+                              ),
+                            ),
+                          )
+                        else ...[
+                          InkWell(
+                            onTap: widget.breadcrumbs![i].onTap,
+                            borderRadius: BorderRadius.circular(4),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 2,
+                              ),
+                              child: Text(
+                                widget.breadcrumbs![i].label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                      ],
+                    ],
+                  ),
+                )
+              else ...[
+                const Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    widget.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.ink,
+                    ),
                   ),
                 ),
-              ),
+              ],
 
               Transform.translate(
-                offset: Offset(isSmallScreen ? 0 : -80, 0),
+                offset: Offset(isSmallScreen ? 0 : 0, 0),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -110,7 +170,7 @@ class _StorePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(999),
@@ -124,7 +184,7 @@ class _StorePill extends StatelessWidget {
           Text(
             name,
             style: const TextStyle(
-              fontSize: 13,
+              fontSize: 11,
               fontWeight: FontWeight.w600,
               color: AppColors.ink,
             ),

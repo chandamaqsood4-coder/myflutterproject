@@ -8,13 +8,14 @@ import '../../../shared/design_system/app_colors.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/page_header.dart';
 import '../../../shared/widgets/pill_buttons.dart';
-import '../../../shared/widgets/preview_notice.dart';
 import '../../../shared/widgets/search_field.dart';
 import '../../auth/presentation/providers/auth_providers.dart';
 import '../domain/product.dart';
+import 'product_detail_page.dart';
+import 'product_edit_page.dart';
 import 'providers/product_providers.dart';
-import 'widgets/product_detail_dialog.dart';
-import 'widgets/product_form_dialog.dart';
+import 'widgets/product_filter_dialog.dart';
+import 'widgets/product_print_dialog.dart';
 import 'widgets/products_table.dart';
 
 class ProductsPage extends ConsumerStatefulWidget {
@@ -31,6 +32,7 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
   Timer? _debounce;
   ProductPage? _lastPage;
   final Set<int> _selected = <int>{};
+  ProductFilters _filters = const ProductFilters();
 
   @override
   void dispose() {
@@ -59,33 +61,35 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
     }
   });
 
-  Future<void> _openForm([Product? product]) async {
-    final saved = await showDialog<bool>(
-      context: context,
-      builder: (context) => ProductFormDialog(product: product),
-    );
-    if (saved == true && mounted) {
-      ref.invalidate(productsProvider);
-      ref.invalidate(productDetailProvider);
-      showMessage(
-        context,
-        product == null ? 'Product created.' : 'Product updated.',
-      );
-    }
+  void _openForm([Product? product]) {
+    ref
+        .read(editingProductProvider.notifier)
+        .edit(
+          product ??
+              const Product(
+                id: 0,
+                name: '',
+                sku: '',
+                unit: 'pc',
+                sellingPriceMinor: 0,
+                status: ProductStatus.active,
+              ),
+        );
   }
 
-  Future<void> _openDetail(Product product) async {
-    await showDialog<void>(
-      context: context,
-      builder: (context) => ProductDetailDialog(product: product),
-    );
+  void _openDetail(Product product) {
+    ref.read(selectedProductDetailProvider.notifier).state = product;
   }
 
   Future<void> _delete(Product product) async {
     final confirmed = await confirmDelete(
       context,
-      title: 'Delete product?',
-      message: '"${product.name}" will be removed. This cannot be undone.',
+      title: 'Delete this product?',
+      message:
+          'This permanently removes the product from the catalog. '
+          'Historical invoices and quotations will still show its name, but '
+          'the product can no longer be sold. This cannot be undone.',
+      confirmLabel: 'Delete Product',
     );
     if (!confirmed || !mounted) return;
 
@@ -103,6 +107,23 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final editingProduct = ref.watch(editingProductProvider);
+    if (editingProduct != null) {
+      return ProductEditPage(
+        product: editingProduct.id != 0 ? editingProduct : null,
+        onBack: () => ref.read(editingProductProvider.notifier).clear(),
+      );
+    }
+
+    final selectedProduct = ref.watch(selectedProductDetailProvider);
+    if (selectedProduct != null) {
+      return ProductDetailPage(
+        product: selectedProduct,
+        onBack: () =>
+            ref.read(selectedProductDetailProvider.notifier).state = null,
+      );
+    }
+
     final permissions = ref.watch(currentPermissionsProvider);
     final canCreate = permissions.contains('products.create');
     final canEdit = permissions.contains('products.update');
@@ -135,8 +156,23 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
               const SizedBox(height: 24),
               _Toolbar(
                 onSearch: _onSearchChanged,
-                onPrint: () => showPreviewNotice(context, 'Printing products'),
-                onFilters: () => showPreviewNotice(context, 'Filters'),
+                onPrint: () {
+                  final products = _lastPage?.items ?? const [];
+                  final displayed = _filters.apply(products);
+                  ProductPrintDialog.show(context, products: displayed);
+                },
+                onFilters: () {
+                  final allProducts = _lastPage?.items ?? const [];
+                  ProductFilterDialog.show(
+                    context,
+                    allProducts: allProducts,
+                    initial: _filters,
+                    onApply: (f) => setState(() => _filters = f),
+                  );
+                },
+                activeFilterCount: _filters.hasAny
+                    ? _filters.apply(_lastPage?.items ?? []).length
+                    : null,
               ),
               const SizedBox(height: 16),
               Expanded(
@@ -152,9 +188,10 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _CountLine(
-                            shown: page.items.length,
+                            shown: _filters.apply(page.items).length,
                             total: page.total,
                             loading: result.isLoading,
+                            filtered: _filters.hasAny,
                           ),
                           if (result is AsyncError) ...[
                             const SizedBox(height: 8),
@@ -167,12 +204,13 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                           const SizedBox(height: 12),
                           Expanded(
                             child: ProductsTable(
-                              products: page.items,
+                              products: _filters.apply(page.items),
                               selectedIds: _selected,
                               canEdit: canEdit,
                               canDelete: canDelete,
                               onToggleRow: _toggleRow,
-                              onToggleAll: () => _toggleAll(page.items),
+                              onToggleAll: () =>
+                                  _toggleAll(_filters.apply(page.items)),
                               onOpen: _openDetail,
                               onEdit: canEdit ? _openForm : (_) {},
                               onDelete: _delete,
@@ -197,11 +235,13 @@ class _CountLine extends StatelessWidget {
     required this.shown,
     required this.total,
     required this.loading,
+    this.filtered = false,
   });
 
   final int shown;
   final int total;
   final bool loading;
+  final bool filtered;
 
   @override
   Widget build(BuildContext context) {
@@ -217,8 +257,13 @@ class _CountLine extends StatelessWidget {
             children: [
               const TextSpan(text: 'Showing '),
               TextSpan(text: '$shown', style: bold),
-              const TextSpan(text: ' of '),
-              TextSpan(text: '$total', style: bold),
+              if (filtered) ...[
+                const TextSpan(text: ' filtered of '),
+                TextSpan(text: '$total', style: bold),
+              ] else ...[
+                const TextSpan(text: ' of '),
+                TextSpan(text: '$total', style: bold),
+              ],
               const TextSpan(text: ' products'),
             ],
           ),
@@ -241,11 +286,13 @@ class _Toolbar extends StatelessWidget {
     required this.onSearch,
     required this.onPrint,
     required this.onFilters,
+    this.activeFilterCount,
   });
 
   final ValueChanged<String> onSearch;
   final VoidCallback onPrint;
   final VoidCallback onFilters;
+  final int? activeFilterCount;
 
   @override
   Widget build(BuildContext context) {
@@ -253,6 +300,11 @@ class _Toolbar extends StatelessWidget {
       hint: 'Search products by name, SKU, or barcode...',
       onChanged: onSearch,
     );
+
+    final filterLabel = activeFilterCount != null
+        ? 'Filters ($activeFilterCount)'
+        : 'Filters';
+
     final buttons = Wrap(
       spacing: 12,
       runSpacing: 12,
@@ -264,7 +316,7 @@ class _Toolbar extends StatelessWidget {
         ),
         OutlinedPillButton(
           icon: Icons.tune,
-          label: 'Filters',
+          label: filterLabel,
           onPressed: onFilters,
         ),
       ],

@@ -56,8 +56,11 @@ class DashboardPage extends ConsumerWidget {
                   if (canCreateInvoice)
                     ElevatedButton.icon(
                       onPressed: () => onNavigate(NavDestination.pos),
-                      icon: const Icon(Icons.shopping_cart_outlined, size: 20),
-                      label: const Text('Launch POS'),
+                      icon: const Icon(Icons.shopping_cart_outlined, size: 18),
+                      label: const Text(
+                        'Launch POS',
+                        style: TextStyle(fontSize: 14),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
                         foregroundColor: Colors.white,
@@ -119,34 +122,49 @@ class DashboardPage extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               AdaptiveGrid(
+                minItemWidth: 280,
+                maxColumns: 4,
+                spacing: 16,
                 children: [
                   if (canCreateInvoice)
-                    QuickActionCard(
-                      icon: Icons.shopping_cart_outlined,
-                      title: 'New POS Invoice',
-                      subtitle: 'High speed counter sales',
-                      onTap: () => onNavigate(NavDestination.pos),
+                    SizedBox(
+                      height: 100,
+                      child: QuickActionCard(
+                        icon: Icons.shopping_cart_outlined,
+                        title: 'New POS Invoice',
+                        subtitle: 'High speed counter sales',
+                        onTap: () => onNavigate(NavDestination.pos),
+                      ),
                     ),
                   if (canCreateProduct)
-                    QuickActionCard(
-                      icon: Icons.add,
-                      title: 'Add Catalog Product',
-                      subtitle: 'Item & electrical specs',
-                      onTap: () => onNavigate(NavDestination.products),
+                    SizedBox(
+                      height: 100,
+                      child: QuickActionCard(
+                        icon: Icons.add,
+                        title: 'Add Catalog Product',
+                        subtitle: 'Item & electrical specs',
+                        onTap: () => onNavigate(NavDestination.products),
+                      ),
                     ),
                   if (canManageCustomers)
-                    QuickActionCard(
-                      icon: Icons.person_add_alt_outlined,
-                      title: 'Customer Account',
-                      subtitle: 'Ledgers & credit terms',
-                      onTap: () => onNavigate(NavDestination.customers),
+                    SizedBox(
+                      height: 100,
+                      child: QuickActionCard(
+                        icon: Icons.person_add_alt_outlined,
+                        title: 'Customer Account',
+                        subtitle: 'Ledgers & credit terms',
+                        onTap: () => onNavigate(NavDestination.customers),
+                      ),
                     ),
                   if (canManageExpenses)
-                    QuickActionCard(
-                      icon: Icons.credit_card_outlined,
-                      title: 'Daily Cashflow',
-                      subtitle: 'Operational income/expense',
-                      onTap: () => onNavigate(NavDestination.cashflow),
+                    SizedBox(
+                      height: 100,
+                      child: QuickActionCard(
+                        icon: Icons.credit_card_outlined,
+                        title: 'Daily Cashflow',
+                        subtitle: 'Operational income/expense',
+                        onTap: () => onNavigate(NavDestination.cashflow),
+                      ),
                     ),
                 ],
               ),

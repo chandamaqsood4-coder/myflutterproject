@@ -42,7 +42,12 @@ class _QuickActionCardState extends State<QuickActionCard> {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              IconBox(icon: widget.icon),
+              // IconBox(icon: widget.icon),
+              IconBox(
+                icon: widget.icon,
+                backgroundColor: _isHovered ? Colors.black : AppColors.surface,
+                color: _isHovered ? Colors.white : AppColors.ink,
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(

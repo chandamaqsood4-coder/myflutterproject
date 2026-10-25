@@ -9,19 +9,21 @@ class IconBox extends StatelessWidget {
     required this.icon,
     this.color = AppColors.ink,
     this.size = 44,
+    this.backgroundColor = AppColors.surface,
   });
 
   final IconData icon;
   final Color color;
   final double size;
-
+  final Color backgroundColor;
   @override
   Widget build(BuildContext context) {
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        // color: AppColors.surface,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.border),
       ),

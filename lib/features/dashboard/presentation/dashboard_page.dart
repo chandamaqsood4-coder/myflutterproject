@@ -52,8 +52,8 @@ class DashboardPage extends ConsumerWidget {
                       backgroundColor: Colors.black,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 18,
+                        horizontal: 18,
+                        vertical: 20,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
@@ -110,29 +110,41 @@ class DashboardPage extends ConsumerWidget {
               const SizedBox(height: 16),
               AdaptiveGrid(
                 children: [
-                  QuickActionCard(
-                    icon: Icons.shopping_cart_outlined,
-                    title: 'New POS Invoice',
-                    subtitle: 'High speed counter sales',
-                    onTap: () => onNavigate(NavDestination.pos),
+                  SizedBox(
+                    height: 90,
+                    child: QuickActionCard(
+                      icon: Icons.shopping_cart_outlined,
+                      title: 'New POS Invoice',
+                      subtitle: 'High speed counter sales',
+                      onTap: () => onNavigate(NavDestination.pos),
+                    ),
                   ),
-                  QuickActionCard(
-                    icon: Icons.add,
-                    title: 'Add Catalog Product',
-                    subtitle: 'Item & electrical specs',
-                    onTap: () => onNavigate(NavDestination.products),
+                  SizedBox(
+                    height: 90,
+                    child: QuickActionCard(
+                      icon: Icons.add,
+                      title: 'Add Catalog Product',
+                      subtitle: 'Item & electrical specs',
+                      onTap: () => onNavigate(NavDestination.products),
+                    ),
                   ),
-                  QuickActionCard(
-                    icon: Icons.person_add_alt_outlined,
-                    title: 'Customer Account',
-                    subtitle: 'Ledgers & credit terms',
-                    onTap: () => onNavigate(NavDestination.customers),
+                  SizedBox(
+                    height: 90,
+                    child: QuickActionCard(
+                      icon: Icons.person_add_alt_outlined,
+                      title: 'Customer Account',
+                      subtitle: 'Ledgers & credit terms',
+                      onTap: () => onNavigate(NavDestination.customers),
+                    ),
                   ),
-                  QuickActionCard(
-                    icon: Icons.credit_card_outlined,
-                    title: 'Daily Cashflow',
-                    subtitle: 'Operational income/expense',
-                    onTap: () => onNavigate(NavDestination.cashflow),
+                  SizedBox(
+                    height: 90,
+                    child: QuickActionCard(
+                      icon: Icons.credit_card_outlined,
+                      title: 'Daily Cashflow',
+                      subtitle: 'Operational income/expense',
+                      onTap: () => onNavigate(NavDestination.cashflow),
+                    ),
                   ),
                 ],
               ),

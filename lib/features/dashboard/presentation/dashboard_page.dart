@@ -11,13 +11,22 @@ import 'widgets/quick_action_card.dart';
 import 'widgets/recent_invoices_section.dart';
 
 class DashboardPage extends ConsumerWidget {
-  const DashboardPage({super.key, required this.onNavigate});
+  const DashboardPage({
+    super.key,
+    required this.onNavigate,
+    required this.permissions,
+  });
 
   final ValueChanged<NavDestination> onNavigate;
+  final Set<String> permissions;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(dashboardSummaryProvider);
+    final canCreateInvoice = permissions.contains('invoices.create');
+    final canCreateProduct = permissions.contains('products.create');
+    final canManageCustomers = permissions.contains('customers.manage');
+    final canManageExpenses = permissions.contains('expenses.manage');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(28, 24, 28, 32),
@@ -44,23 +53,24 @@ class DashboardPage extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  ElevatedButton.icon(
-                    onPressed: () => onNavigate(NavDestination.pos),
-                    icon: const Icon(Icons.shopping_cart_outlined, size: 20),
-                    label: const Text('Launch POS'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 20,
+                  if (canCreateInvoice)
+                    ElevatedButton.icon(
+                      onPressed: () => onNavigate(NavDestination.pos),
+                      icon: const Icon(Icons.shopping_cart_outlined, size: 20),
+                      label: const Text('Launch POS'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 21,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 2,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      elevation: 2,
                     ),
-                  ),
                 ],
               ),
 
@@ -110,42 +120,46 @@ class DashboardPage extends ConsumerWidget {
               const SizedBox(height: 16),
               AdaptiveGrid(
                 children: [
-                  SizedBox(
-                    height: 90,
-                    child: QuickActionCard(
-                      icon: Icons.shopping_cart_outlined,
-                      title: 'New POS Invoice',
-                      subtitle: 'High speed counter sales',
-                      onTap: () => onNavigate(NavDestination.pos),
+                  if (canCreateInvoice)
+                    SizedBox(
+                      height: 90,
+                      child: QuickActionCard(
+                        icon: Icons.shopping_cart_outlined,
+                        title: 'New POS Invoice',
+                        subtitle: 'High speed counter sales',
+                        onTap: () => onNavigate(NavDestination.pos),
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    height: 90,
-                    child: QuickActionCard(
-                      icon: Icons.add,
-                      title: 'Add Catalog Product',
-                      subtitle: 'Item & electrical specs',
-                      onTap: () => onNavigate(NavDestination.products),
+                  if (canCreateProduct)
+                    SizedBox(
+                      height: 90,
+                      child: QuickActionCard(
+                        icon: Icons.add,
+                        title: 'Add Catalog Product',
+                        subtitle: 'Item & electrical specs',
+                        onTap: () => onNavigate(NavDestination.products),
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    height: 90,
-                    child: QuickActionCard(
-                      icon: Icons.person_add_alt_outlined,
-                      title: 'Customer Account',
-                      subtitle: 'Ledgers & credit terms',
-                      onTap: () => onNavigate(NavDestination.customers),
+                  if (canManageCustomers)
+                    SizedBox(
+                      height: 90,
+                      child: QuickActionCard(
+                        icon: Icons.person_add_alt_outlined,
+                        title: 'Customer Account',
+                        subtitle: 'Ledgers & credit terms',
+                        onTap: () => onNavigate(NavDestination.customers),
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    height: 90,
-                    child: QuickActionCard(
-                      icon: Icons.credit_card_outlined,
-                      title: 'Daily Cashflow',
-                      subtitle: 'Operational income/expense',
-                      onTap: () => onNavigate(NavDestination.cashflow),
+                  if (canManageExpenses)
+                    SizedBox(
+                      height: 90,
+                      child: QuickActionCard(
+                        icon: Icons.credit_card_outlined,
+                        title: 'Daily Cashflow',
+                        subtitle: 'Operational income/expense',
+                        onTap: () => onNavigate(NavDestination.cashflow),
+                      ),
                     ),
-                  ),
                 ],
               ),
               const SizedBox(height: 32),

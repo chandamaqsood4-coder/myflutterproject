@@ -11,14 +11,13 @@ class QuickActionCard extends StatefulWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
-    // this.selected = false,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
-  // final bool selected;
+
   @override
   State<QuickActionCard> createState() => _QuickActionCardState();
 }

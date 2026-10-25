@@ -32,3 +32,16 @@ String formatShortDate(DateTime date) =>
 /// Formats a quantity without trailing zeros: 19 -> `19`, 2.5 -> `2.5`.
 String formatQuantity(double quantity) =>
     quantity.toStringAsFixed(3).replaceFirst(RegExp(r'\.?0+$'), '');
+
+/// Parses a user-entered amount (`1,234.5`) into minor units, or null when the
+/// text is not a valid non-negative money value with at most two decimals.
+int? parseMinorUnits(String text) {
+  final normalized = text.trim().replaceAll(',', '');
+  if (!RegExp(r'^\d+(\.\d{1,2})?$').hasMatch(normalized)) return null;
+
+  final parts = normalized.split('.');
+  final whole = int.tryParse(parts.first);
+  if (whole == null) return null;
+  final fraction = parts.length > 1 ? parts[1].padRight(2, '0') : '00';
+  return whole * 100 + int.parse(fraction);
+}

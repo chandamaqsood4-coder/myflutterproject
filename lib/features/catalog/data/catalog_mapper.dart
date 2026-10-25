@@ -24,6 +24,17 @@ int? _linkedProducts(Map<String, dynamic> json) {
     'linked_products',
     'linked_products_count',
     'product_count',
+    'productCount',
+    'productsCount',
+    'count',
+    'items_count',
+    'itemsCount',
+    'total_products',
+    'totalProducts',
+    'associated_products',
+    'associatedProducts',
+    'linked_count',
+    'linkedCount',
   ]) {
     final value = parseInt(json[key]);
     if (value != null) return value;

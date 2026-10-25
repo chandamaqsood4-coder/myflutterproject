@@ -25,7 +25,7 @@ class AppCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-          color: selected ? Colors.black : AppColors.border,
+          color: selected ? AppColors.ink : AppColors.border,
           width: selected ? 2 : 1,
         ),
       ),

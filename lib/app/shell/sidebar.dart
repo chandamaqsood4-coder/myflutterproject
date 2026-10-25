@@ -40,18 +40,24 @@ class Sidebar extends StatelessWidget {
         ),
         child: Column(
           children: [
-            SizedBox(
-              height: 72,
+            Container(
+              height: 68,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: AppColors.border, width: 1),
+                ),
+              ),
               child: Center(
                 child: DukanOsLogo(
-                  height: collapsed ? 32 : 36,
+                  height: collapsed ? 65 : 76,
                   iconOnly: collapsed,
                 ),
               ),
             ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.fromLTRB(10, 12, 10, 10),
                 children: [
                   for (final item in items)
                     Padding(

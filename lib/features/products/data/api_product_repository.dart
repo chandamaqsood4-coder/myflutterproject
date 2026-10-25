@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 
 import '../../../core/network/api_exception.dart';
@@ -62,23 +64,13 @@ class ApiProductRepository implements ProductRepository {
     return guardApi(() async {
       final response = await _dio.post<Map<String, dynamic>>(
         '/products',
-        data: productDraftToJson(draft),
+        // The API applies the opening stock as part of the create request.
+        // Adjusting afterwards would add it twice.
+        data: productDraftToJson(draft, includeOpeningQuantity: true),
       );
       final body = responseBody(response);
       final data = body['data'];
-      if (data is Map<String, dynamic>) {
-        final product = productFromJson(data);
-        final stock = draft.stockQty ?? 0;
-        if (stock != 0) {
-          try {
-            await _dio.post<Object?>(
-              '/inventory/${product.id}/adjust',
-              data: {'delta': stock, 'note': 'Opening stock'},
-            );
-          } catch (_) {}
-        }
-        return product;
-      }
+      if (data is Map<String, dynamic>) return productFromJson(data);
       return null;
     });
   }
@@ -103,11 +95,21 @@ class ApiProductRepository implements ProductRepository {
         final delta = desired - existing;
         if (delta != 0) {
           try {
-            await _dio.post<Object?>(
-              '/inventory/$id/adjust',
-              data: {'delta': delta, 'note': 'Stock updated from product edit'},
+            await adjustStock(
+              id,
+              delta,
+              note: 'Stock updated from product edit',
             );
-          } catch (_) {}
+          } on ApiException catch (e) {
+            // The product fields are already saved, but stock is now out of
+            // sync. Tell the user instead of hiding the partial failure.
+            throw ApiException(
+              e.type,
+              'Product details were saved, but stock could not be updated: '
+              '${e.message}',
+              statusCode: e.statusCode,
+            );
+          }
         }
       }
       return updated ?? current;
@@ -124,6 +126,29 @@ class ApiProductRepository implements ProductRepository {
           if (note != null && note.isNotEmpty) 'note': note,
         },
       );
+    });
+  }
+
+  @override
+  Future<String> uploadImage({
+    required Uint8List bytes,
+    required String filename,
+  }) {
+    return guardApi(() async {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/products/upload-image',
+        data: FormData.fromMap({
+          'image': MultipartFile.fromBytes(bytes, filename: filename),
+        }),
+      );
+      final url = imageUrlFromJson(responseBody(response));
+      if (url == null) {
+        throw const ApiException(
+          ApiFailureType.unexpected,
+          'Image uploaded but no URL was returned.',
+        );
+      }
+      return url;
     });
   }
 

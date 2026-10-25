@@ -21,6 +21,8 @@ Product productFromJson(Map<String, dynamic> json) {
     categoryName:
         _textOrName(json['category']) ?? nonEmptyString(json['category_name']),
     brandName: _textOrName(json['brand']) ?? nonEmptyString(json['brand_name']),
+    categoryId: _idOf(json['category']) ?? parseInt(json['category_id']),
+    brandId: _idOf(json['brand']) ?? parseInt(json['brand_id']),
     unit: _textOrName(json['unit']) ?? nonEmptyString(json['unit']) ?? 'pc',
     sellingPriceMinor: toMinorUnits(json['selling_price']) ?? 0,
     purchasePriceMinor: toMinorUnits(
@@ -51,6 +53,11 @@ String? _textOrName(Object? value) {
   return null;
 }
 
+int? _idOf(Object? value) {
+  if (value is Map<String, dynamic>) return parseInt(value['id']);
+  return parseInt(value);
+}
+
 String? _galleryFirst(Object? value) {
   if (value is List && value.isNotEmpty) {
     final first = value.first;
@@ -78,6 +85,10 @@ int? _stockQty(Map<String, dynamic> json, Map<String, dynamic>? inventoryMap) {
         final parsed = parseInt(source[key]);
         if (parsed != null) return parsed;
       }
+    } else {
+      // Some responses expose stock as a plain number or numeric string.
+      final parsed = parseInt(source);
+      if (parsed != null) return parsed;
     }
   }
   return null;
@@ -89,7 +100,10 @@ String _statusToApi(ProductStatus status) => switch (status) {
   ProductStatus.deleted => 'deleted',
 };
 
-Map<String, dynamic> productDraftToJson(ProductDraft draft) {
+Map<String, dynamic> productDraftToJson(
+  ProductDraft draft, {
+  bool includeOpeningQuantity = false,
+}) {
   final price = (draft.sellingPriceMinor / 100).toStringAsFixed(2);
   final cost = ((draft.purchasePriceMinor) / 100).toStringAsFixed(2);
   return {
@@ -103,7 +117,7 @@ Map<String, dynamic> productDraftToJson(ProductDraft draft) {
     'selling_price': price,
     'purchase_cost': cost,
     'status': _statusToApi(draft.status),
-    'opening_quantity': draft.stockQty ?? 0,
+    if (includeOpeningQuantity) 'opening_quantity': draft.stockQty ?? 0,
     if (draft.minQuantityThreshold != null)
       'min_quantity_threshold': draft.minQuantityThreshold,
     if (draft.description != null && draft.description!.trim().isNotEmpty)
@@ -111,4 +125,17 @@ Map<String, dynamic> productDraftToJson(ProductDraft draft) {
     if (draft.imageUrl != null && draft.imageUrl!.trim().isNotEmpty)
       'image': draft.imageUrl!.trim(),
   };
+}
+
+/// Reads the uploaded image URL from `POST /products/upload-image`.
+String? imageUrlFromJson(Map<String, dynamic> body) {
+  final data = body['data'];
+  if (data is Map<String, dynamic>) {
+    final url =
+        nonEmptyString(data['url']) ??
+        nonEmptyString(data['path']) ??
+        nonEmptyString(data['image']);
+    if (url != null) return url;
+  }
+  return nonEmptyString(body['url']);
 }

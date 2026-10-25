@@ -174,8 +174,8 @@ class _Avatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 40,
-      height: 40,
+      width: 32,
+      height: 32,
       alignment: Alignment.center,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
@@ -189,7 +189,7 @@ class _Avatar extends StatelessWidget {
         _initials(name),
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 14,
+          fontSize: 11,
           fontWeight: FontWeight.w700,
         ),
       ),

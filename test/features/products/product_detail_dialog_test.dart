@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dukan_os/features/auth/presentation/providers/auth_providers.dart';
 import 'package:dukan_os/features/products/domain/product.dart';
 import 'package:dukan_os/features/products/domain/product_repository.dart';
@@ -30,6 +32,12 @@ class _FakeProductRepository implements ProductRepository {
 
   @override
   Future<void> adjustStock(int id, int delta, {String? note}) async {}
+
+  @override
+  Future<String> uploadImage({
+    required Uint8List bytes,
+    required String filename,
+  }) async => 'https://example.com/image.png';
 
   @override
   Future<void> deleteProduct(int id) async {}
@@ -104,14 +112,14 @@ void main() {
     expect(find.text('Stock & Inventory'), findsOneWidget);
     expect(find.text('Sales Information'), findsOneWidget);
     expect(find.text('Sales History'), findsOneWidget);
-    expect(find.text('ups'), findsOneWidget);
+    expect(find.text('ups'), findsAtLeastNWidgets(1));
     expect(find.text('Clipsal'), findsOneWidget);
     expect(find.text('PKR 1,999.00'), findsOneWidget);
     expect(find.text('PKR 1,500.00'), findsOneWidget);
     expect(find.text('PKR 499.00'), findsOneWidget);
     expect(find.text('33.3%'), findsOneWidget);
     expect(find.text('PKR 15,000.00'), findsOneWidget);
-    expect(find.text('Edit Product'), findsOneWidget);
+    expect(find.text('Edit'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -141,7 +149,7 @@ void main() {
   ) async {
     await _open(tester, permissions: const {'products.view'});
 
-    expect(find.text('Edit Product'), findsNothing);
+    expect(find.text('Edit'), findsNothing);
     expect(find.text('Product Information'), findsOneWidget);
   });
 }

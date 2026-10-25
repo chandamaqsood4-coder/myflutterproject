@@ -58,8 +58,12 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
   Future<void> _delete(CatalogEntry entry) async {
     final confirmed = await confirmDelete(
       context,
-      title: 'Delete ${_kind.singular.toLowerCase()}?',
-      message: '"${entry.name}" will be removed. This cannot be undone.',
+      title: 'Delete this ${_kind.singular.toLowerCase()}?',
+      message:
+          'This permanently removes "${entry.name}". Products already linked '
+          'to it will keep its name on old records, but will no longer be '
+          'associated. This cannot be undone.',
+      confirmLabel: 'Delete',
     );
     if (!confirmed || !mounted) return;
 
@@ -83,7 +87,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
     final entries = ref.watch(catalogEntriesProvider(_kind));
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
+      padding: const EdgeInsets.fromLTRB(32, 28, 32, 24),
       child: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
@@ -104,7 +108,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
               ),
               const SizedBox(height: 24),
               _Tabs(selected: _kind, countOf: _count, onSelect: _selectKind),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               Align(
                 alignment: Alignment.centerLeft,
                 child: ConstrainedBox(
@@ -241,8 +245,8 @@ class _TabButton extends StatelessWidget {
               Text(
                 kind.plural,
                 style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                  fontSize: 14,
+                  fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
                   color: color,
                 ),
               ),

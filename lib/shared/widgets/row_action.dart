@@ -31,13 +31,18 @@ class RowAction extends StatelessWidget {
             children: [
               Icon(icon, size: 16, color: color),
               if (label != null) ...[
-                const SizedBox(width: 6),
-                Text(
-                  label!,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: color,
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    label!,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: color,
+                    ),
                   ),
                 ),
               ],

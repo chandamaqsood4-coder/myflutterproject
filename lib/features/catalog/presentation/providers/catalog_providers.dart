@@ -35,16 +35,16 @@ final catalogEntriesProvider =
             final computed = kind == CatalogKind.category
                 ? countsByCategory[e.id]
                 : countsByBrand[e.id];
-return CatalogEntry(
-                id: e.id,
-                name: e.name,
-                slug: e.slug,
-                isActive: e.isActive,
-                description: e.description,
-                linkedProducts: computed ?? 0,
-                parentId: e.parentId,
-                sortOrder: e.sortOrder,
-              );
+            return CatalogEntry(
+              id: e.id,
+              name: e.name,
+              slug: e.slug,
+              isActive: e.isActive,
+              description: e.description,
+              linkedProducts: computed ?? 0,
+              parentId: e.parentId,
+              sortOrder: e.sortOrder,
+            );
           }).toList();
         },
         loading: () => entries,

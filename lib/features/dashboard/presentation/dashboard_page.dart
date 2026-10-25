@@ -65,8 +65,8 @@ class DashboardPage extends ConsumerWidget {
                         backgroundColor: Colors.black,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 18,
+                          horizontal: 20,
+                          vertical: 21,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
@@ -128,7 +128,7 @@ class DashboardPage extends ConsumerWidget {
                 children: [
                   if (canCreateInvoice)
                     SizedBox(
-                      height: 100,
+                      height: 90,
                       child: QuickActionCard(
                         icon: Icons.shopping_cart_outlined,
                         title: 'New POS Invoice',
@@ -138,7 +138,7 @@ class DashboardPage extends ConsumerWidget {
                     ),
                   if (canCreateProduct)
                     SizedBox(
-                      height: 100,
+                      height: 90,
                       child: QuickActionCard(
                         icon: Icons.add,
                         title: 'Add Catalog Product',
@@ -148,7 +148,7 @@ class DashboardPage extends ConsumerWidget {
                     ),
                   if (canManageCustomers)
                     SizedBox(
-                      height: 100,
+                      height: 90,
                       child: QuickActionCard(
                         icon: Icons.person_add_alt_outlined,
                         title: 'Customer Account',
@@ -158,7 +158,7 @@ class DashboardPage extends ConsumerWidget {
                     ),
                   if (canManageExpenses)
                     SizedBox(
-                      height: 100,
+                      height: 90,
                       child: QuickActionCard(
                         icon: Icons.credit_card_outlined,
                         title: 'Daily Cashflow',

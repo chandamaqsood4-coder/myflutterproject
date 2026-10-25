@@ -109,7 +109,9 @@ class _ConfirmDeleteDialog extends StatelessWidget {
                     child: const Text(
                       'Cancel',
                       style: TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.w500),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -132,7 +134,9 @@ class _ConfirmDeleteDialog extends StatelessWidget {
                     child: Text(
                       confirmLabel,
                       style: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.w600),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],

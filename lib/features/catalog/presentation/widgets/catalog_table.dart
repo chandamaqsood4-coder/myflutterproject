@@ -47,8 +47,8 @@ class CatalogTable extends StatelessWidget {
 
     // The action labels grow with the text scale, so the column widens with
     // them instead of clipping the labels.
-    final actionsWidth =
-        _actionsWidth * MediaQuery.textScalerOf(context).scale(1);
+    final scale = MediaQuery.textScalerOf(context).scale(1);
+    final actionsWidth = (_actionsWidth * scale).clamp(200.0, 320.0);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -223,23 +223,28 @@ class _EntryRow extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     if (canEdit)
-                      RowAction(
-                        icon: Icons.edit_outlined,
-                        label: 'Edit',
-                        color: AppColors.brand,
-                        tooltip: 'Edit ${entry.name}',
-                        onTap: onEdit,
+                      Flexible(
+                        child: RowAction(
+                          icon: Icons.edit_outlined,
+                          label: 'Edit',
+                          color: AppColors.brand,
+                          tooltip: 'Edit ${entry.name}',
+                          onTap: onEdit,
+                        ),
                       ),
-                    if (canEdit && canDelete) const SizedBox(width: 12),
+                    if (canEdit && canDelete) const SizedBox(width: 8),
                     if (canDelete)
-                      RowAction(
-                        icon: Icons.delete_outline,
-                        label: 'Delete',
-                        color: AppColors.error,
-                        tooltip: 'Delete ${entry.name}',
-                        onTap: onDelete,
+                      Flexible(
+                        child: RowAction(
+                          icon: Icons.delete_outline,
+                          label: 'Delete',
+                          color: AppColors.error,
+                          tooltip: 'Delete ${entry.name}',
+                          onTap: onDelete,
+                        ),
                       ),
                   ],
                 ),

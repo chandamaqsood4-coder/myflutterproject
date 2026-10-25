@@ -38,13 +38,11 @@ class _QuickActionCardState extends State<QuickActionCard> {
         child: AppCard(
           onTap: widget.onTap,
           selected: _isHovered,
-          // padding: const EdgeInsets.all(16),
-          padding: const EdgeInsets.symmetric(horizontal: 09, vertical: 19),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // IconBox(icon: widget.icon),
               IconBox(
                 icon: widget.icon,
                 backgroundColor: _isHovered ? Colors.black : AppColors.surface,
@@ -54,9 +52,12 @@ class _QuickActionCardState extends State<QuickActionCard> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       widget.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -66,7 +67,9 @@ class _QuickActionCardState extends State<QuickActionCard> {
                     const SizedBox(height: 2),
                     Text(
                       widget.subtitle,
-                      // maxLines: 1,
+                      maxLines: 2,
+                      overflow: TextOverflow.visible,
+
                       style: const TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,

@@ -43,11 +43,7 @@ class Sidebar extends StatelessWidget {
             Container(
               height: 68,
               width: double.infinity,
-<<<<<<< Updated upstream
-              decoration: BoxDecoration(
-=======
               decoration: const BoxDecoration(
->>>>>>> Stashed changes
                 border: Border(
                   bottom: BorderSide(color: AppColors.border, width: 1),
                 ),

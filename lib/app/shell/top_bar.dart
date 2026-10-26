@@ -62,7 +62,6 @@ class _TopBarState extends State<TopBar> {
 
               const SizedBox(width: 6),
 
-<<<<<<< Updated upstream
               if (widget.breadcrumbs != null && widget.breadcrumbs!.isNotEmpty)
                 Expanded(
                   child: Row(
@@ -131,25 +130,6 @@ class _TopBarState extends State<TopBar> {
                       fontWeight: FontWeight.w600,
                       color: AppColors.ink,
                     ),
-=======
-              const Icon(
-                Icons.chevron_right,
-                size: 18,
-                color: AppColors.textSecondary,
-              ),
-
-              const SizedBox(width: 4),
-
-              Expanded(
-                child: Text(
-                  widget.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.ink,
->>>>>>> Stashed changes
                   ),
                 ),
               ],

@@ -5,6 +5,17 @@
 import FlutterMacOS
 import Foundation
 
+
+func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
+}
+
+//
+//  Generated file. Do not edit.
+//
+
+import FlutterMacOS
+import Foundation
+
 import audioplayers_darwin
 import path_provider_foundation
 import shared_preferences_foundation

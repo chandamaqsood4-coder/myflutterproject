@@ -3,6 +3,8 @@ import 'package:dukan_os/features/catalog/domain/catalog_entry.dart';
 import 'package:dukan_os/features/catalog/domain/catalog_repository.dart';
 import 'package:dukan_os/features/catalog/presentation/catalog_page.dart';
 import 'package:dukan_os/features/catalog/presentation/providers/catalog_providers.dart';
+import 'package:dukan_os/features/products/domain/product.dart';
+import 'package:dukan_os/features/products/presentation/providers/product_providers.dart';
 import 'package:dukan_os/shared/design_system/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,6 +52,9 @@ const List<CatalogEntry> _entries = [
 Widget _harness(Widget child) => ProviderScope(
   overrides: [
     catalogRepositoryProvider.overrideWithValue(_FakeCatalogRepository()),
+    productsProvider.overrideWith(
+      (ref, query) async => const ProductPage(items: [], total: 0),
+    ),
     currentPermissionsProvider.overrideWithValue(const {
       'products.view',
       'products.create',
@@ -71,7 +76,7 @@ Future<void> _pump(WidgetTester tester, Size size) async {
   addTearDown(tester.view.reset);
 
   await tester.pumpWidget(_harness(const CatalogPage()));
-  await tester.pump();
+  await tester.pumpAndSettle();
 }
 
 void main() {

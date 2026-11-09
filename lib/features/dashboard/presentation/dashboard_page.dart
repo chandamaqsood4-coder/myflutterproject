@@ -127,8 +127,8 @@ class DashboardPage extends ConsumerWidget {
                 spacing: 16,
                 children: [
                   if (canCreateInvoice)
-                    SizedBox(
-                      height: 90,
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 90),
                       child: QuickActionCard(
                         icon: Icons.shopping_cart_outlined,
                         title: 'New POS Invoice',
@@ -137,8 +137,8 @@ class DashboardPage extends ConsumerWidget {
                       ),
                     ),
                   if (canCreateProduct)
-                    SizedBox(
-                      height: 90,
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 90),
                       child: QuickActionCard(
                         icon: Icons.add,
                         title: 'Add Catalog Product',
@@ -147,8 +147,8 @@ class DashboardPage extends ConsumerWidget {
                       ),
                     ),
                   if (canManageCustomers)
-                    SizedBox(
-                      height: 90,
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 90),
                       child: QuickActionCard(
                         icon: Icons.person_add_alt_outlined,
                         title: 'Customer Account',
@@ -157,8 +157,8 @@ class DashboardPage extends ConsumerWidget {
                       ),
                     ),
                   if (canManageExpenses)
-                    SizedBox(
-                      height: 90,
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 90),
                       child: QuickActionCard(
                         icon: Icons.credit_card_outlined,
                         title: 'Daily Cashflow',
